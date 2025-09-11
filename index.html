@@ -1,26 +1,288 @@
 <!DOCTYPE html>
 <html lang="ja">
-<head>
-    <meta charset="utf-8">
+  <head>
+    <meta charset="utf-8" />
     <title>魅力発信サイト</title>
-    <link rel="stylesheet" href="stylesheet.css">
-</head>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
-<body>
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: sans-serif;
+      }
 
- <div class="header">
-    <div class="header-logo">魅力発信サイト</div>
+      .header {
+        color: black;
+        background-color: aliceblue;
+        width: 100%;
+        height: 90px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
 
-    <div class="header-title">
+      .header-logo {
+        font-size: 30px;
+        margin-right: 100px;
+      }
+
+      .header-list ul {
+        display: flex;
+        gap: 40px;
+        font-size: 20px;
+      }
+      .header-list li {
+        list-style: none;
+      }
+
+      /* カルーセル全体 */
+      .carousel-container {
+        position: relative;
+        width: 100%;
+        max-width: 1400px;
+        margin: 50px auto;
+        height: 400px;
+      }
+
+      /* 中央画像 */
+      .carousel-slide.center {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 400px;
+        height: 400px;
+        transform: translate(-50%, -50%);
+        z-index: 10;
+      }
+      .carousel-slide.center img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      /* 左右画像（半分だけ表示） */
+      .carousel-slide.left-half,
+      .carousel-slide.right-half {
+        position: absolute;
+        top: 50%;
+        width: 400px;
+        height: 400px;
+        transform: translateY(-50%);
+        z-index: 5;
+        opacity: 0.9;
+      }
+      .carousel-slide.left-half {
+        right: calc(50% + 200px + 100px); /* 中央400pxの半分+100px間隔 */
+        clip-path: polygon(50% 0%, 100% 0%, 100% 100%, 50% 100%);
+      }
+      .carousel-slide.right-half {
+        left: calc(50% + 200px + 100px);
+        clip-path: polygon(0% 0%, 50% 0%, 50% 100%, 0% 100%);
+      }
+      .carousel-slide img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      /* ナビボタン */
+      .carousel-nav {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(255, 255, 255, 0.8);
+        border: none;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        font-size: 24px;
+        cursor: pointer;
+        z-index: 20;
+        transition: background 0.3s;
+      }
+      .carousel-nav:hover {
+        background: rgba(255, 255, 255, 1);
+      }
+      .carousel-nav.prev {
+        left: 20px;
+      }
+      .carousel-nav.next {
+        right: 20px;
+      }
+
+      /* ドット */
+      .carousel-dots {
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 10px;
+        z-index: 20;
+      }
+      .dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.5);
+        cursor: pointer;
+        transition: background 0.3s;
+      }
+      .dot.active {
+        background: rgba(255, 255, 255, 1);
+      }
+      .dot:hover {
+        background: rgba(255, 255, 255, 0.8);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-logo">魅力発信サイト</div>
+      <div class="header-list">
         <ul>
-            <li>発信内容</li>
-            <li>発信地域</li>
-            <li>イベント予定</li>
-            <li>お問い合わせ</li>
+          <li>発信内容</li>
+          <li>発信地域</li>
+          <li>イベント予定</li>
+          <li>お問い合わせ</li>
         </ul>
+      </div>
     </div>
- </div>
 
-</body>
+    <!-- カルーセル -->
+    <div class="carousel-container">
+      <div class="carousel-slide left-half">
+        <img src="images/top1_image.jpg" alt="画像1" id="image1" />
+      </div>
+      <div class="carousel-slide center">
+        <img src="images/top2_image.jpg" alt="画像2" id="image2" />
+      </div>
+      <div class="carousel-slide right-half">
+        <img src="images/top3_image.jpg" alt="画像3" id="image3" />
+      </div>
 
+      <!-- ボタン -->
+      <button class="carousel-nav prev" onclick="prevSlide()">‹</button>
+      <button class="carousel-nav next" onclick="nextSlide()">›</button>
+
+      <!-- ドット -->
+      <div class="carousel-dots">
+        <span class="dot active" onclick="currentSlide(1)"></span>
+        <span class="dot" onclick="currentSlide(2)"></span>
+        <span class="dot" onclick="currentSlide(3)"></span>
+      </div>
+    </div>
+
+    <script>
+      let currentIndex = 0;
+      const dots = document.querySelectorAll(".dot");
+      const totalSlides = 3;
+      let autoSlideInterval;
+
+      const imageUrls = [
+        "images/top1_image.jpg",
+        "images/top1_image.jpg",
+        "images/top1_image.jpg",
+      ];
+
+      // スライド更新
+      function updateSlide() {
+        const prevIndex = (currentIndex - 1 + totalSlides) % totalSlides;
+        const nextIndex = (currentIndex + 1) % totalSlides;
+
+        const slides = document.querySelectorAll(".carousel-slide img");
+        slides[0].src = imageUrls[prevIndex];
+        slides[1].src = imageUrls[currentIndex];
+        slides[2].src = imageUrls[nextIndex];
+
+        // ドット更新
+        dots.forEach((dot, index) => {
+          dot.classList.toggle("active", index === currentIndex);
+        });
+      }
+
+      function nextSlide() {
+        currentIndex = (currentIndex + 1) % totalSlides;
+        updateSlide();
+        resetAutoSlide();
+      }
+      function prevSlide() {
+        currentIndex = (currentIndex - 1 + totalSlides) % totalSlides;
+        updateSlide();
+        resetAutoSlide();
+      }
+      function currentSlide(n) {
+        currentIndex = n - 1;
+        updateSlide();
+        resetAutoSlide();
+      }
+
+      function startAutoSlide() {
+        autoSlideInterval = setInterval(nextSlide, 5000);
+      }
+      function resetAutoSlide() {
+        clearInterval(autoSlideInterval);
+        startAutoSlide();
+      }
+
+      function init() {
+        updateSlide();
+        startAutoSlide();
+      }
+
+      window.addEventListener("load", init);
+
+
+
+          document.querySelectorAll('.parent-item').forEach(item => {
+          item.addEventListener('click', () => {
+          const childItems = item.querySelectorAll('.child-items');
+          childItems.forEach(child => {
+          child.classList.toggle('visible'); // visibleクラスの付け外しで表示・非表示を切り替える
+          });
+        });
+       });
+
+    </script>
+
+    <div class="main">
+
+    <div class="kategori">
+      <h2 class="kategori-logo">カテゴリ</h2>
+
+
+         <ul>
+    <a href="#" class="parent" onclick="func1(this)">親要素1
+      <ul>
+        <li>子要素1-1</li>
+        <li>子要素1-2</li>
+      </ul>
+    </a>
+    <li class="parent" onclick="func1(this)">親要素2
+      <ul>
+        <li>子要素2-1</li>
+        <li>子要素2-2</li>
+      </ul>
+    </li>
+  </ul>
+
+  </div>
+
+  <script>
+    function func1(e) {
+      e.classList.toggle("active");
+    }
+  </script>
+
+          
+          
+       
+      
+    </div>
+  </body>
 </html>
